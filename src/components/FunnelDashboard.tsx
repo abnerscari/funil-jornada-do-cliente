@@ -42,10 +42,11 @@ function benchmarkLabel(benchmark: Benchmark): string {
   return `> ${formatRate(benchmark.min)}`;
 }
 
-type Status = 'critical' | 'success';
+type Status = 'critical' | 'attention' | 'success';
 
 function getPerformanceStatus(value: number, benchmark: Benchmark): Status {
   if (value < benchmark.min) return 'critical';
+  if (value < benchmark.min * 1.1) return 'attention';
   return 'success';
 }
 
@@ -55,10 +56,14 @@ function getStatusColor(status: Status, type: 'text' | 'bg' | 'border'): string 
       if (type === 'bg') return 'bg-red-500';
       if (type === 'text') return 'text-red-500';
       return 'border-red-500/30';
-    case 'success':
+    case 'attention':
       if (type === 'bg') return 'bg-[#FFAA17]';
       if (type === 'text') return 'text-[#FFAA17]';
       return 'border-[#FFAA17]/30';
+    case 'success':
+      if (type === 'bg') return 'bg-rei-green';
+      if (type === 'text') return 'text-rei-green';
+      return 'border-rei-green/30';
   }
 }
 
@@ -230,10 +235,10 @@ export default function FunnelDashboard() {
                   className={`h-[48px] ${barColor} rounded-lg shadow-lg flex flex-col items-center justify-center relative transition-all duration-500 ease-out border border-white/10`}
                 >
                   <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-black text-[#0F1B4E] leading-none">
+                    <span className={`text-lg font-black leading-none ${barColor === "bg-[#FFAA17]" ? "text-[#0F1B4E]" : "text-white"}`}>
                       {formatRaw(step.value)}
                     </span>
-                    <span className="text-[9px] font-bold text-[#0F1B4E]/80 uppercase tracking-widest">
+                    <span className={`text-[9px] font-bold uppercase tracking-widest ${barColor === "bg-[#FFAA17]" ? "text-[#0F1B4E]/80" : "text-white/80"}`}>
                       {step.label}
                     </span>
                   </div>
@@ -275,7 +280,7 @@ export default function FunnelDashboard() {
             const status = getPerformanceStatus(kpi.value, kpi.benchmark);
             return (
               <div key={kpi.label} className={`flex-1 bg-[#1A275E] border rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-lg transition-all group relative overflow-hidden ${getStatusColor(status, 'border')}`}>
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFAA17]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={`absolute inset-0 bg-gradient-to-br to-transparent opacity-0 group-hover:opacity-100 transition-opacity ${status === 'success' ? 'from-rei-green/5' : status === 'attention' ? 'from-[#FFAA17]/5' : 'from-red-500/5'}`} />
 
                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">
                   {kpi.label}
