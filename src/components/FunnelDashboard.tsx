@@ -91,29 +91,15 @@ const InputRow = ({
   setter,
   icon: Icon,
   tooltip,
-  benchmark,
 }: {
   label: string;
   value: number;
   setter: (v: number) => void;
   icon: ComponentType<LucideProps>;
   tooltip?: string;
-  benchmark?: Benchmark;
 }) => {
   return (
     <div className="flex flex-col gap-1 w-full relative">
-      {/* Benchmark Label - Outside and Above */}
-      {benchmark && (
-        <div className="flex justify-end px-1 mb-0.5 xl:mb-1 max-h-[800px]:flex-row max-h-[800px]:justify-between max-h-[800px]:items-center max-h-[800px]:w-full max-h-[800px]:px-0">
-          {/* On short screens, maybe show label here? No, the input row has the label. 
-                Let's keep it simple: just compact the text. 
-            */}
-          <span className="text-[10px] font-medium text-slate-400/80 tracking-wide font-mono leading-none">
-            Meta: <span className="text-slate-300">{formatRate(benchmark.min)}{benchmark.max ? ` - ${formatRate(benchmark.max)}` : ''}</span>
-          </span>
-        </div>
-      )}
-
       <div className="flex items-center justify-between bg-[#1A275E] border border-white/5 rounded-lg px-2 lg:px-3 py-1 lg:py-2 h-10 lg:h-[50px] max-h-[800px]:h-9 shadow-sm hover:border-[#FFAA17]/30 transition-colors gap-2 overflow-visible relative group/input">
 
         {/* Group 1: Left - Icon + Label (Flex Grow) */}
@@ -161,6 +147,19 @@ export default function FunnelDashboard() {
   const [inicializacaoCompra, setInicializacaoCompra] = useState<number>(0);
   const [compras, setCompras] = useState<number>(0);
 
+  const [benchmarks, setBenchmarks] = useState({
+    ctr: 1,
+    connectRate: 70,
+    viewToCart: 15,
+    cartToCheckout: 20,
+    checkoutToPurchase: 35,
+    metaConversion: 1.5,
+  });
+
+  const updateBenchmark = (key: keyof typeof benchmarks, value: number) => {
+    setBenchmarks(prev => ({ ...prev, [key]: value }));
+  };
+
   // Taxas
   const ctr = impressoes > 0 ? (cliques / impressoes) * 100 : 0;
   const connectRate = cliques > 0 ? (visualizacoes / cliques) * 100 : 0;
@@ -175,17 +174,17 @@ export default function FunnelDashboard() {
   // Note: 'rate' property here belongs to the transition FROM the previous step TO this step.
   const funnelSteps = [
     { label: "Impressões", value: impressoes, setter: setImpressoes, icon: Eye, width: "100%", color: "bg-[#FFAA17]", tooltip: "Quantidade total de vezes que seus anúncios foram exibidos." },
-    { label: "Cliques", value: cliques, setter: setCliques, icon: MousePointerClick, width: "90%", rate: ctr, benchmark: { min: 1 }, rateLabel: "CTR", tooltip: "Número de vezes que usuários clicaram no seu anúncio.", rateTooltip: "Taxa de Cliques (CTR): Porcentagem de impressões que geraram um clique." },
-    { label: "Visualizações", value: visualizacoes, setter: setVisualizacoes, icon: FileText, width: "80%", rate: connectRate, benchmark: { min: 70 }, rateLabel: "Connect Rate", tooltip: "Número de visitas qualificadas que carregaram a página.", rateTooltip: "Connect Rate: Porcentagem de cliques que efetivamente carregaram o site." },
-    { label: "Add. Carrinho", value: adicoesCarrinho, setter: setAdicoesCarrinho, icon: ShoppingCart, width: "70%", rate: viewToCartRate, benchmark: { min: 15, max: 20 }, rateLabel: "Add Carrinho", tooltip: "Número de usuários que adicionaram um produto ao carrinho.", rateTooltip: "Taxa de Adição: Visitantes que colocaram produtos no carrinho." },
-    { label: "Checkout", value: inicializacaoCompra, setter: setInicializacaoCompra, icon: CreditCard, width: "60%", rate: cartToCheckoutRate, benchmark: { min: 20, max: 30 }, rateLabel: "Checkout", tooltip: "Número de usuários que iniciaram o processo de pagamento.", rateTooltip: "Taxa de Checkout: Usuários com carrinho que iniciaram o pagamento." },
-    { label: "Compras", value: compras, setter: setCompras, icon: BadgeCheck, width: "50%", rate: checkoutToPurchaseRate, benchmark: { min: 35, max: 50 }, rateLabel: "Taxa Compra", tooltip: "Porcentagem de sessões que resultaram em uma venda real.", rateTooltip: "Taxa de Conversão de Checkout: Pagamentos iniciados que foram concluídos." },
+    { label: "Cliques", value: cliques, setter: setCliques, icon: MousePointerClick, width: "90%", rate: ctr, benchmarkKey: 'ctr', rateLabel: "CTR", tooltip: "Número de vezes que usuários clicaram no seu anúncio.", rateTooltip: "Taxa de Cliques (CTR): Porcentagem de impressões que geraram um clique." },
+    { label: "Visualizações", value: visualizacoes, setter: setVisualizacoes, icon: FileText, width: "80%", rate: connectRate, benchmarkKey: 'connectRate', rateLabel: "Connect Rate", tooltip: "Número de visitas qualificadas que carregaram a página.", rateTooltip: "Connect Rate: Porcentagem de cliques que efetivamente carregaram o site." },
+    { label: "Add. Carrinho", value: adicoesCarrinho, setter: setAdicoesCarrinho, icon: ShoppingCart, width: "70%", rate: viewToCartRate, benchmarkKey: 'viewToCart', rateLabel: "Add Carrinho", tooltip: "Número de usuários que adicionaram um produto ao carrinho.", rateTooltip: "Taxa de Adição: Visitantes que colocaram produtos no carrinho." },
+    { label: "Checkout", value: inicializacaoCompra, setter: setInicializacaoCompra, icon: CreditCard, width: "60%", rate: cartToCheckoutRate, benchmarkKey: 'cartToCheckout', rateLabel: "Checkout", tooltip: "Número de usuários que iniciaram o processo de pagamento.", rateTooltip: "Taxa de Checkout: Usuários com carrinho que iniciaram o pagamento." },
+    { label: "Compras", value: compras, setter: setCompras, icon: BadgeCheck, width: "50%", rate: checkoutToPurchaseRate, benchmarkKey: 'checkoutToPurchase', rateLabel: "Taxa Compra", tooltip: "Porcentagem de sessões que resultaram em uma venda real.", rateTooltip: "Taxa de Conversão de Checkout: Pagamentos iniciados que foram concluídos." },
   ];
 
   const kpis = [
-    { label: "Taxa de Cliques (CTR)", value: ctr, benchmark: { min: 1 }, tooltip: "Porcentagem de impressões que resultaram em um clique (Cliques ÷ Impressões)." },
-    { label: "Connect Rate", value: connectRate, benchmark: { min: 70 }, tooltip: "Porcentagem de cliques que aguardaram o carregamento do site (Sessões ÷ Cliques)." },
-    { label: "Taxa de Conversão", value: metaConversionRate, benchmark: { min: 1.5 }, tooltip: "Porcentagem de sessões que resultaram em uma venda real." },
+    { label: "Taxa de Cliques (CTR)", value: ctr, benchmarkKey: 'ctr', tooltip: "Porcentagem de impressões que resultaram em um clique (Cliques ÷ Impressões)." },
+    { label: "Connect Rate", value: connectRate, benchmarkKey: 'connectRate', tooltip: "Porcentagem de cliques que aguardaram o carregamento do site (Sessões ÷ Cliques)." },
+    { label: "Taxa de Conversão", value: metaConversionRate, benchmarkKey: 'metaConversion', tooltip: "Porcentagem de sessões que resultaram em uma venda real." },
   ];
 
   return (
@@ -209,6 +208,8 @@ export default function FunnelDashboard() {
         {/* ── COL 1: Inputs & Benchmarks (Span 3) ── */}
         {/* ── COL 1: Inputs & Benchmarks (Span 3) ── */}
         <div className="lg:col-span-3 flex flex-col justify-between h-full py-8 max-h-[800px]:py-2 relative z-30">
+          {/* Vertical Connector Line (Left Column) */}
+          <div className="absolute left-[28px] top-[56px] bottom-[56px] max-h-[800px]:top-[26px] max-h-[800px]:bottom-[26px] w-[2px] bg-slate-700/30 -z-10 hidden lg:block" />
           {funnelSteps.map((step, i) => {
             // Determine if we need to show a benchmark BETWEEN this step and the Previous one.
             // Actually, the request says "Between inputs". 
@@ -223,13 +224,6 @@ export default function FunnelDashboard() {
                   setter={step.setter}
                   icon={step.icon}
                   tooltip={step.tooltip}
-                  // Pass the benchmark from the current step if it exists (e.g. for conversion rates associated with this step)
-                  // But based on the previous logic, the benchmark was associated with the NEXT step's rate. 
-                  // Let's look at the data structure again.
-                  // Step 0 (Impressões) -> No benchmark.
-                  // Step 1 (Cliques) -> Benchmark { min: 1 } (CTR).
-                  // So if we are rendering Step 1 (Cliques), we should show the benchmark for CTR.
-                  benchmark={step.benchmark}
                 />
               </div>
             );
@@ -242,8 +236,11 @@ export default function FunnelDashboard() {
           {funnelSteps.map((step, i) => {
             // Color logic
             let status: Status = 'success'; // Default to success/yellow if no rate
-            if (step.rate !== undefined && step.benchmark) {
-              status = getPerformanceStatus(step.rate, step.benchmark);
+            // @ts-ignore
+            if (step.rate !== undefined && step.benchmarkKey) {
+              // @ts-ignore
+              const currentBenchmarkValue = benchmarks[step.benchmarkKey];
+              status = getPerformanceStatus(step.rate, { min: currentBenchmarkValue });
             }
             const barColor = i === 0 ? "bg-[#FFAA17]" : getStatusColor(status, 'bg');
 
@@ -272,33 +269,60 @@ export default function FunnelDashboard() {
                 </div>
 
                 {/* Connector (Below the bar, connecting to next) - Only if not last */}
+                {/* Connector (Below the bar, connecting to next) - Only if not last */}
                 {i < funnelSteps.length - 1 && (
-                  <div className="relative flex items-center justify-center my-3 h-8 z-0 group/connector">
-                    {/* Vertical Connecting Line & Arrow */}
-                    <div className="absolute top-[-10px] bottom-[-10px] w-0.5 bg-white/10 -z-10 group-hover/connector:bg-white/20 transition-colors"></div>
-                    <div className="absolute bottom-[-14px] text-white/10 group-hover/connector:text-white/30 transition-colors z-0">
-                      <ArrowDown size={14} />
-                    </div>
+                  <div className="relative flex flex-col items-center justify-center my-1 z-0 group/connector">
+                    {/* Vertical Connecting Line (Background) */}
+                    <div className="absolute top-0 bottom-0 w-0.5 bg-white/10 -z-10 group-hover/connector:bg-white/20 transition-colors"></div>
 
                     {/* Only show rate if next step has one (which it strictly does in our data model) */}
-                    {funnelSteps[i + 1].rate !== undefined && (
-                      <span className={`text-xl font-extrabold px-1.5 py-0 rounded shadow-sm relative z-10 bg-[#0F1B4E] border transition-transform group-hover/connector:scale-110 flex items-center gap-1 tabular-nums ${getStatusColor(
-                        getPerformanceStatus(funnelSteps[i + 1].rate!, funnelSteps[i + 1].benchmark!),
-                        'text'
-                      )
-                        } ${getStatusColor(
-                          getPerformanceStatus(funnelSteps[i + 1].rate!, funnelSteps[i + 1].benchmark!),
-                          'border'
-                        )
-                        }`}>
-                        {formatRate(funnelSteps[i + 1].rate!)}
-                        {funnelSteps[i + 1].rateTooltip && (
-                          <div className="z-50 pointer-events-auto">
-                            <Tooltip text={funnelSteps[i + 1].rateTooltip!} />
+                    {funnelSteps[i + 1].rate !== undefined && (() => {
+                      const nextStep = funnelSteps[i + 1];
+                      // @ts-ignore
+                      const currentBenchmarkValue = benchmarks[nextStep.benchmarkKey];
+                      return (
+                        <>
+                          {/* 1. Rate Display (Top) */}
+                          <span className={`text-xl font-extrabold px-1.5 py-0 rounded shadow-sm relative z-10 bg-[#0F1B4E] border transition-transform group-hover/connector:scale-110 flex items-center gap-1 tabular-nums ${getStatusColor(
+                            getPerformanceStatus(nextStep.rate!, { min: currentBenchmarkValue }),
+                            'text'
+                          )
+                            } ${getStatusColor(
+                              getPerformanceStatus(nextStep.rate!, { min: currentBenchmarkValue }),
+                              'border'
+                            )
+                            }`}>
+                            {formatRate(nextStep.rate!)}
+                            {nextStep.rateTooltip && (
+                              <div className="z-50 pointer-events-auto">
+                                <Tooltip text={nextStep.rateTooltip!} />
+                              </div>
+                            )}
+                          </span>
+
+                          {/* 2. Arrow (Middle) */}
+                          <div className="text-white/10 group-hover/connector:text-white/30 transition-colors z-0 my-0.5">
+                            <ArrowDown size={14} />
                           </div>
-                        )}
-                      </span>
-                    )}
+
+                          {/* 3. Editable Benchmark Input (Bottom) */}
+                          <div className="flex items-center gap-1 pointer-events-auto z-10 bg-[#0F1B4E] px-1 rounded border border-transparent hover:border-white/10 transition-colors mt-4 mb-2">
+                            <span className="text-[9px] text-slate-500 font-medium">Meta:</span>
+                            <input
+                              type="number"
+                              step="0.1"
+                              className="w-10 bg-transparent text-[10px] text-slate-400 border-none focus:outline-none text-center transition-colors font-mono p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              value={currentBenchmarkValue}
+                              onChange={(e) => {
+                                // @ts-ignore
+                                updateBenchmark(nextStep.benchmarkKey, Number(e.target.value))
+                              }}
+                            />
+                            <span className="text-[9px] text-slate-600">%</span>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 )}
               </div>
@@ -309,7 +333,9 @@ export default function FunnelDashboard() {
         {/* ── COL 3: KPI Highlights (Span 3) ── */}
         <div className="lg:col-span-3 flex flex-col h-full gap-4 py-2 max-h-[800px]:gap-2 relative z-10">
           {kpis.map((kpi) => {
-            const status = getPerformanceStatus(kpi.value, kpi.benchmark);
+            // @ts-ignore
+            const currentBenchmarkValue = benchmarks[kpi.benchmarkKey];
+            const status = getPerformanceStatus(kpi.value, { min: currentBenchmarkValue });
             return (
               <div key={kpi.label} className={`flex-1 bg-[#1A275E] border rounded-xl p-4 max-h-[800px]:p-2 flex flex-col items-center justify-center text-center shadow-lg transition-all group relative overflow-visible ${getStatusColor(status, 'border')}`}>
                 <div className={`absolute inset-0 bg-gradient-to-br to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl ${status === 'success' ? 'from-rei-green/5' : status === 'attention' ? 'from-[#FFAA17]/5' : 'from-red-500/5'}`} />
@@ -328,7 +354,19 @@ export default function FunnelDashboard() {
                 <div className="bg-[#0F1B4E] rounded-full px-3 py-1 flex items-center gap-2 border border-white/5 relative z-10">
                   <Target size={10} className="text-slate-500" />
                   <span className="text-[10px] text-slate-400 font-bold">Meta:</span>
-                  <span className="text-[11px] font-bold text-white">{benchmarkLabel(kpi.benchmark)}</span>
+                  <div className="flex items-center gap-0.5">
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="w-8 bg-transparent text-[11px] font-bold text-white border-b border-transparent hover:border-slate-600 focus:border-[#FFAA17] focus:outline-none text-center transition-colors font-mono p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      value={currentBenchmarkValue}
+                      onChange={(e) => {
+                        // @ts-ignore
+                        updateBenchmark(kpi.benchmarkKey, Number(e.target.value))
+                      }}
+                    />
+                    <span className="text-[9px] font-bold text-slate-400">%</span>
+                  </div>
                 </div>
               </div>
             );
