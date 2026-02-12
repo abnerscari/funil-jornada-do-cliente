@@ -160,7 +160,7 @@ export default function FunnelDashboard() {
       {/* ── Fixed Header ── */}
       <header className="h-14 px-6 relative flex items-center justify-center border-b border-white/5 bg-[#0F1B4E] z-50 shrink-0">
         <div className="flex items-center gap-3">
-          <Image src="/logo-agencia-rei.svg" alt="Agência Rei" width={100} height={28} className="h-6 w-auto opacity-90" priority />
+          <img src="/logo-agencia-rei.png" alt="Agência Rei" className="h-6 w-auto opacity-90 object-contain" />
           <div className="w-px h-4 bg-white/10" />
           <h1 className="text-sm font-extrabold text-[#FFAA17] tracking-tight uppercase">Funil de Jornada do Cliente</h1>
         </div>
