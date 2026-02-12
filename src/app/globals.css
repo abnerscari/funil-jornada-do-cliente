@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rei-blue: #0F1B4E;
+  --color-rei-yellow: #FFAA17;
+  --color-rei-blue-light: #1a2a6c;
+  --color-rei-card: #1A275E;
+}
